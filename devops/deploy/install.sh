@@ -632,7 +632,7 @@ write_file() { # path, with the content on standard input: replaced in one step
 
 write_compose() {
   write_file "$INSTALL_DIR/compose.yaml" <<'COMPOSE'
-# Written by MausBot's installer (devops/deploy/install.sh), and written again each time it runs: put your own settings in
+# Written by MausBot's installer (deploy/install.sh), and written again each time it runs: put your own settings in
 # .env beside this file, which the installer keeps. The server only listens on loopback inside its container, and on
 # two Unix sockets in the `edge` volume, which Caddy, in its own container, reaches it through. A request on a socket is
 # always a remote one to the server. Caddy does not share the server's network: a server that restarted on its own came
