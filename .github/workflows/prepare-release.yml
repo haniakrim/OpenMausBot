@@ -96,10 +96,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "release/v$VERSION"
-          node scripts/tighten-ratchets.mjs
-          node scripts/record-data-format.mjs
-          node scripts/generate-locale.mjs --record-hashes
-          git add package.json server/data-format-released.json scripts/testing/file-size-ratchet.test.ts scripts/testing/index-route-ratchet.test.ts src/locales/source-hashes.json
+          node devops/scripts/agent-app/tighten-ratchets.mjs
+          node devops/scripts/agent-app/record-data-format.mjs
+          node devops/scripts/agent-app/generate-locale.mjs --record-hashes
+          git add package.json be/ai/server/data-format-released.json devops/scripts/agent-app/testing/file-size-ratchet.test.ts devops/scripts/agent-app/testing/index-route-ratchet.test.ts fe/desktop/src/locales/source-hashes.json
           git commit -m "chore(release): bump version to $VERSION"
           git push --set-upstream origin "release/v$VERSION"
 

@@ -47,7 +47,7 @@ jobs:
       - name: Package from the verified offline CUA stage
         run: pnpm package:linux:offline
       - name: Verify package contents and metadata
-        run: node scripts/verify-linux-package.mjs
+        run: node devops/scripts/agent-app/verify-linux-package.mjs
       - name: Match a normal Ubuntu package parent on the ephemeral runner
         run: |
           test ! -L /opt
@@ -62,7 +62,7 @@ jobs:
         run: |
           deb=(release/*.deb)
           test "${#deb[@]}" -eq 1
-          sudo --preserve-env=CI,RUNNER_TEMP node scripts/smoke-deb-upgrade.mjs "${deb[0]}"
+          sudo --preserve-env=CI,RUNNER_TEMP node devops/scripts/agent-app/smoke-deb-upgrade.mjs "${deb[0]}"
       - name: Prove the handed-over Ubuntu command installs
         # The .deb path ends with a command on the user's clipboard, so the
         # command is the deliverable. Runs it as root on a clean Ubuntu through
@@ -83,7 +83,7 @@ jobs:
           sudo chmod 4755 release/linux-unpacked/chrome-sandbox
           test "$(stat -c '%U:%G %a' release/linux-unpacked/chrome-sandbox)" = "root:root 4755"
       - name: Verify the installed browser with Ubuntu sandbox restrictions
-        run: node scripts/smoke-browser-bundle.mjs --resources /opt/OpenMausBot/resources
+        run: node devops/scripts/agent-app/smoke-browser-bundle.mjs --resources /opt/OpenMausBot/resources
       - name: Launch packaged app and verify lifecycle
         env:
           OMB_KEEP_SMOKE_DIR: "1"

@@ -8,10 +8,10 @@ on:
   pull_request:
     paths:
       - .github/workflows/browser-vendor-windows.yml
-      - scripts/build-windows-browser-vendor.mjs
-      - scripts/build-windows-browser-vendor.test.mjs
-      - scripts/smoke-browser-bundle.mjs
-      - third_party/browser/agent-browser-windows-stdio.patch
+      - devops/scripts/agent-app/build-windows-browser-vendor.mjs
+      - devops/scripts/agent-app/build-windows-browser-vendor.test.mjs
+      - devops/scripts/agent-app/smoke-browser-bundle.mjs
+      - devops/third_party/browser/agent-browser-windows-stdio.patch
 
 permissions:
   contents: read
@@ -39,7 +39,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mingw-w64
       - name: Build from the verified source and local backport
-        run: node scripts/build-windows-browser-vendor.mjs --output "$RUNNER_TEMP/browser-vendor"
+        run: node devops/scripts/agent-app/build-windows-browser-vendor.mjs --output "$RUNNER_TEMP/browser-vendor"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: windows-browser-vendor
@@ -72,11 +72,11 @@ jobs:
           & "$env:RUNNER_TEMP/browser-vendor/agent-browser-tests.exe" --exact native::cdp::chrome::tests::test_chrome_child_has_no_console --nocapture
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Stage the pinned Chromium and notices
-        run: node scripts/prepare-browser.mjs --current
+        run: node devops/scripts/agent-app/prepare-browser.mjs --current
       - name: Prove cold start and close/reopen with captured MCP output
         shell: pwsh
         run: |
           $resources = "$env:RUNNER_TEMP/browser-vendor-resources"
           New-Item -ItemType Directory -Path $resources | Out-Null
           Copy-Item -Recurse "$env:GITHUB_WORKSPACE/dist-native/browser/win32-x64" "$resources/browser-engine"
-          node scripts/smoke-browser-bundle.mjs --resources "$resources" --engine-candidate "$env:RUNNER_TEMP/browser-vendor/agent-browser-win32-x64.exe"
+          node devops/scripts/agent-app/smoke-browser-bundle.mjs --resources "$resources" --engine-candidate "$env:RUNNER_TEMP/browser-vendor/agent-browser-win32-x64.exe"

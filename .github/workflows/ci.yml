@@ -2,10 +2,10 @@
 # branches (a push to main, a pull request, a merge group) that the repository owner both authored and started does its
 # Linux work on one 16 vCPU Boat VM, one Boat start per run: the static job runs on boat-xlarge and, after its checks,
 # runs the Linux vitest shards, behavior evals and the Linux packaged server smoke side by side
-# (scripts/ci-linux-lanes.mjs) instead of as GitHub-hosted jobs. Boat runs a public repository's job only for the users
+# (devops/scripts/agent-app/ci-linux-lanes.mjs) instead of as GitHub-hosted jobs. Boat runs a public repository's job only for the users
 # on its allow-list (`boat ci public`) and fails any other at once, so every other run, a fork's, the nightly and manual
 # runs (the release lane among them), and every run while BOAT_CI is anything else run on GitHub's runners exactly as
-# before. `boat ci` and the dashboard's CI on Boat VMs tab list the Boat jobs (docs/ci.md).
+# before. `boat ci` and the dashboard's CI on Boat VMs tab list the Boat jobs (devops/docs/agent-app/ci.md).
 name: CI
 
 on:
@@ -18,10 +18,10 @@ on:
   # merged is stopped in the queue instead of on main (that shape reddened
   # main twice in Sep 2026). Turning the queue on is a branch-ruleset
   # setting, which GitHub offers only once an organization owns the
-  # repository (docs/ci.md); this trigger is what lets CI report on those runs.
+  # repository (devops/docs/agent-app/ci.md); this trigger is what lets CI report on those runs.
   merge_group:
   # The full lane every night on main's newest commit: every platform's shards
-  # and smokes, which pushes to main and merge groups leave out (docs/ci.md).
+  # and smokes, which pushes to main and merge groups leave out (devops/docs/agent-app/ci.md).
   schedule:
     - cron: "17 21 * * *"
 
@@ -36,7 +36,7 @@ concurrency:
   # in October 2026). The running one always finishes. Every other run has a
   # group no push can join: a merge group its own ref, the nightly run and each
   # manual run (the release branch's, and the release-ci/v<version> lane that
-  # scripts/release-ci.mjs starts) their event and branch. A PR's group is
+  # devops/scripts/agent-app/release-ci.mjs starts) their event and branch. A PR's group is
   # named by its number, never by github.ref: a merged PR's closed event
   # reports the base branch as github.ref, so a ref-named group let every merge
   # cancel main's run (ci-stop-closed.yml).
@@ -47,7 +47,7 @@ jobs:
   # ── The test leg, in pieces ──────────────────────────────────────────────
   # Platform-independent checks run once, the suite runs in shards per
   # platform, and every smoke reports on its own. One final `CI` check
-  # aggregates the required jobs (see docs/ci.md for ruleset migration).
+  # aggregates the required jobs (see devops/docs/agent-app/ci.md for ruleset migration).
   static:
     name: >-
       ${{ vars.BOAT_CI == 'on' && contains(fromJSON('["push", "pull_request", "merge_group"]'), github.event_name)
@@ -94,28 +94,28 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           OMB_CI_LINUX_IN_STATIC: ${{ runner.environment == 'self-hosted' }}
-        run: node scripts/ci-scope.mjs
+        run: node devops/scripts/agent-app/ci-scope.mjs
       - run: pnpm install --frozen-lockfile
       - name: Verify CI selection and documentation references
-        run: pnpm exec vitest run scripts/ci-scope.test.ts scripts/ci-linux-lanes.test.ts scripts/ci-workflow.test.ts scripts/testing/verification-docs.test.ts
+        run: pnpm exec vitest run --config fe/desktop/vite.config.ts --root . devops/scripts/agent-app/ci-scope.test.ts devops/scripts/agent-app/ci-linux-lanes.test.ts devops/scripts/agent-app/ci-workflow.test.ts devops/scripts/agent-app/testing/verification-docs.test.ts
       - name: Validate locale catalogs
         run: pnpm i18n:check
       - name: Validate the model manifest
         # Installs download this file from main within hours of a change, so a bad edit must not land.
         env:
           MANIFEST_BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
-        run: node scripts/check-model-manifest.mjs --against "$MANIFEST_BASE"
+        run: node devops/scripts/agent-app/check-model-manifest.mjs --against "$MANIFEST_BASE"
       - run: pnpm check:contrast
       - run: pnpm lint
       - name: Validate the announcements file
-        # Installs download it from main within the hour (docs/announcements.md), so a bad edit must not land.
+        # Installs download it from main within the hour (devops/docs/agent-app/announcements.md), so a bad edit must not land.
         env:
           ANNOUNCEMENTS_BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
-        run: node scripts/check-announcements.mjs --against "$ANNOUNCEMENTS_BASE"
+        run: node devops/scripts/agent-app/check-announcements.mjs --against "$ANNOUNCEMENTS_BASE"
       - name: Source guards
         # The tests that only read the source: seconds here, and they stay in the shards. On Nov 3-4 2026 one of them was
         # red on main for 11 hours, and each PR heard about it after about 70 minutes, once its shards had found a runner.
-        run: pnpm exec vitest run src/locales/ scripts/testing/file-size-ratchet.test.ts scripts/testing/index-route-ratchet.test.ts scripts/testing/tighten-ratchets.test.ts scripts/testing/comment-history.test.ts scripts/testing/lazy-server-modules.test.ts scripts/testing/duration-sequencer.test.ts scripts/testing/host-e2e.test.ts scripts/testing/ci-retry-list.test.ts src/lib/copy-text.guard.test.ts src/components/Select.guard.test.ts --reporter=default --reporter=github-actions
+        run: pnpm exec vitest run --config fe/desktop/vite.config.ts --root . fe/desktop/src/locales/ devops/scripts/agent-app/testing/file-size-ratchet.test.ts devops/scripts/agent-app/testing/index-route-ratchet.test.ts devops/scripts/agent-app/testing/tighten-ratchets.test.ts devops/scripts/agent-app/testing/comment-history.test.ts devops/scripts/agent-app/testing/lazy-server-modules.test.ts devops/scripts/agent-app/testing/duration-sequencer.test.ts devops/scripts/agent-app/testing/host-e2e.test.ts devops/scripts/agent-app/testing/ci-retry-list.test.ts fe/desktop/src/lib/copy-text.guard.test.ts fe/desktop/src/components/Select.guard.test.ts --reporter=default --reporter=github-actions
       # The rest runs only on a Boat VM, where ci-scope moved the Linux jobs' work into this job.
       - name: Remove what Boat installs and GitHub's runners lack
         if: steps.scope.outputs.linux_lanes
@@ -138,18 +138,18 @@ jobs:
         # Boat's runner gives every process cap_dac_read_search as an ambient capability, so a test can still read a
         # file it set to mode 000, and Boat's desktop sets DISPLAY. GitHub's runners have neither.
         shell: setpriv --inh-caps=-all --ambient-caps=-all -- env -u DISPLAY -u XAUTHORITY bash --noprofile --norc -eo pipefail {0}
-        run: node scripts/ci-linux-lanes.mjs
+        run: node devops/scripts/agent-app/ci-linux-lanes.mjs
       - name: Report flaky tests that needed a retry
         if: ${{ !cancelled() && steps.scope.outputs.linux_lanes }}
         env:
           OMB_VITEST_RETRY_LOG: ${{ runner.temp }}/vitest-retries.jsonl
-        run: node scripts/testing/ci-retry-summary.mjs
+        run: node devops/scripts/agent-app/testing/ci-retry-summary.mjs
       - name: Upload eval run reports on failure
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: failure() && steps.scope.outputs.linux_lanes
         with:
           name: behavior-evals-reports-${{ github.sha }}-${{ github.run_attempt }}
-          path: evals/reports/runs/
+          path: be/ai/evals/reports/runs/
           if-no-files-found: warn
           retention-days: 7
 
@@ -157,7 +157,7 @@ jobs:
     needs: static
     if: contains(needs.static.outputs.jobs, '"build"')
     # The slow checks, about three minutes, beside the shards rather than ahead
-    # of them. A pull request that changes only docs, tests under scripts/ or
+    # of them. A pull request that changes only docs, tests under devops/scripts/agent-app/ or
     # the control plane cannot change what they check.
     name: typecheck + build
     runs-on: ubuntu-latest
@@ -175,14 +175,14 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm check:electron
       - name: production UI build
-        run: pnpm exec vite build
+        run: pnpm exec vite build fe/desktop
 
   vitest:
     # Admit the expensive runner fan-out only after the quick checks pass.
     # A failing preflight still fails the required gates; nothing is waived.
     needs: static
     if: contains(needs.static.outputs.jobs, '"vitest"')
-    # scripts/ci-scope.mjs picks the platforms and their shards: PRs run Linux,
+    # devops/scripts/agent-app/ci-scope.mjs picks the platforms and their shards: PRs run Linux,
     # and Windows only when their change can break Windows or they carry the
     # windows label (the account runs only five macOS jobs at a time), main
     # pushes and merge groups Linux and Windows, and the full lane (nightly,
@@ -191,7 +191,7 @@ jobs:
     # only translations runs the locale tests alone. On a Boat VM the static
     # job runs the Linux entries itself. Linux runs every file;
     # Windows and macOS run every file but the e2e files that test only OMB's
-    # own logic (OMB_VITEST_E2E=host, scripts/testing/host-e2e.ts). The split
+    # own logic (OMB_VITEST_E2E=host, devops/scripts/agent-app/testing/host-e2e.ts). The split
     # is deterministic, so a failure names the same shard on every run, and
     # the same --shard and OMB_VITEST_E2E reproduce it locally.
     name: vitest (${{ matrix.os }}, ${{ matrix.part }})
@@ -199,7 +199,7 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.static.outputs.vitest_matrix) }}
     runs-on: ${{ matrix.os }}
-    # scripts/testing/duration-sequencer.ts splits each platform's files by
+    # devops/scripts/agent-app/testing/duration-sequencer.ts splits each platform's files by
     # their recorded seconds on that platform, about 6 minutes a Linux shard
     # (four files at once); a Windows shard runs two files at once. The cap
     # catches a hang, not normal suite growth; Windows runners are about 1.45x
@@ -223,21 +223,21 @@ jobs:
         # on the PR, so the failing test and its assertion are readable
         # without opening the job log.
         env:
-          # scripts/testing/ci-retry-runner.ts records each listed flaky test
+          # devops/scripts/agent-app/testing/ci-retry-runner.ts records each listed flaky test
           # that needed a retry here (the runner context is step-level only).
           OMB_VITEST_RETRY_LOG: ${{ runner.temp }}/vitest-retries.jsonl
           OMB_VITEST_E2E: ${{ matrix.e2e }}
           OMB_VITEST_SUBSET: ${{ matrix.files }}
           OMB_VITEST_WORKERS: ${{ matrix.workers }}
-        run: pnpm exec vitest run ${{ matrix.files }} --shard=${{ matrix.shard }}/${{ matrix.shards }} --reporter=default --reporter=github-actions
+        run: pnpm exec vitest run --config fe/desktop/vite.config.ts --root . ${{ matrix.files }} --shard=${{ matrix.shard }}/${{ matrix.shards }} --reporter=default --reporter=github-actions
       - name: Report flaky tests that needed a retry
-        # Known flakes (scripts/testing/ci-retry-list.json) get two retries in
+        # Known flakes (devops/scripts/agent-app/testing/ci-retry-list.json) get two retries in
         # CI. A pass after a retry is still listed in the job summary, so the
         # flake stays visible until its entry is fixed and removed.
         if: ${{ !cancelled() }}
         env:
           OMB_VITEST_RETRY_LOG: ${{ runner.temp }}/vitest-retries.jsonl
-        run: node scripts/testing/ci-retry-summary.mjs
+        run: node devops/scripts/agent-app/testing/ci-retry-summary.mjs
       - name: Broker and Electron unit tests
         if: matrix.node_tests
         # About half a minute; node --test has no overall deadline, so a file
@@ -269,11 +269,11 @@ jobs:
         # The root typecheck builds src and server only; evals carries its
         # own tsconfig, so its type gate runs here with the rest of the
         # eval surfaces.
-        run: pnpm exec tsc -p evals/tsconfig.json
+        run: pnpm exec tsc -p be/ai/evals/tsconfig.json
       - name: Eval vitest gate (redaction, trace, golden replay)
         # Same reporter pair as the vitest shards, so a failure annotates
         # the PR with the failing test and assertion.
-        run: pnpm exec vitest run --config evals/vitest.config.ts --reporter=default --reporter=github-actions
+        run: pnpm exec vitest run --config be/ai/evals/vitest.config.ts --reporter=default --reporter=github-actions
       - name: Tier 1 scenarios (scripted harness, no models)
         run: pnpm eval
       - name: Tier 2 golden replay against committed baselines
@@ -288,7 +288,7 @@ jobs:
         if: failure()
         with:
           name: behavior-evals-reports-${{ github.sha }}-${{ github.run_attempt }}
-          path: evals/reports/runs/
+          path: be/ai/evals/reports/runs/
           if-no-files-found: warn
           retention-days: 7
 
@@ -363,17 +363,17 @@ jobs:
         # phone-relay smoke below forks the same dist-server/index.js.
         run: pnpm test:packaged-server
       - name: Verify native approval mode transitions
-        run: pnpm exec electron scripts/smoke-approval-modes.cjs
+        run: pnpm exec electron devops/scripts/agent-app/smoke-approval-modes.cjs
       - name: Verify app permissions and guarded display capture
-        run: node scripts/smoke-app-permissions.mjs
+        run: node devops/scripts/agent-app/smoke-app-permissions.mjs
       - name: Verify chat app frames stay sealed
-        run: node scripts/smoke-app-frames.mjs --engagement
+        run: node devops/scripts/agent-app/smoke-app-frames.mjs --engagement
       - name: Verify paired phone authorization against packaged harness
         # Forks dist-server/index.js, built by the packaged server step.
-        run: pnpm build:companion && pnpm exec electron scripts/smoke-phone-relay-auth.cjs
+        run: pnpm build:companion && pnpm exec electron devops/scripts/agent-app/smoke-phone-relay-auth.cjs
       - name: Verify Send to My Cloud's login handoff over the real utility port
         # Forks dist-server/index.js, built by the packaged server step.
-        run: pnpm exec electron scripts/smoke-login-handoff.cjs
+        run: pnpm exec electron devops/scripts/agent-app/smoke-login-handoff.cjs
 
   gate:
     # One aggregation, not three queued runners doing the same check.
@@ -421,17 +421,17 @@ jobs:
           OMB_ARM64_FIXTURE: ${{ runner.temp }}/omb-cloudflared-arm64
         run: |
           node --input-type=module -e 'import assert from "node:assert/strict"; assert.equal(process.platform, "linux"); assert.equal(process.arch, "arm64");'
-          node scripts/prepare-cloudflared.mjs --current --root "$OMB_ARM64_FIXTURE"
-          node scripts/prepare-cloudflared.mjs --current --root "$OMB_ARM64_FIXTURE"
+          node devops/scripts/agent-app/prepare-cloudflared.mjs --current --root "$OMB_ARM64_FIXTURE"
+          node devops/scripts/agent-app/prepare-cloudflared.mjs --current --root "$OMB_ARM64_FIXTURE"
           "$OMB_ARM64_FIXTURE/dist-native/cloudflared/linux-arm64/cloudflared" version
 
   foss:
     needs: static
     if: contains(needs.static.outputs.jobs, '"foss"')
-    # LICENSING.md promises that deleting enterprise/ leaves a working
+    # LICENSING.md promises that deleting be/ai/enterprise/ leaves a working
     # open-source edition. Prove it on runtime changes: typecheck, the edition
     # tests, and a boot that reports "oss" even with a key set.
-    name: open-source edition builds without enterprise/
+    name: open-source edition builds without be/ai/enterprise/
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -445,13 +445,13 @@ jobs:
       - name: Delete the enterprise folder
         run: rm -rf enterprise
       - run: pnpm typecheck
-      - run: pnpm exec vitest run server/enterprise.test.ts server/brand.test.ts
+      - run: pnpm exec vitest run --config fe/desktop/vite.config.ts --root . be/ai/server/enterprise.test.ts be/ai/server/brand.test.ts
       - name: The server boots and reports the open-source edition
         run: |
           mkdir -p /tmp/omb-foss/home
           HOME=/tmp/omb-foss/home OMB_DATA_DIR=/tmp/omb-foss/data OMB_PORT=18797 OMB_WEBHOOK_PORT=18796 \
             OMB_BROWSER_CONNECTION=/tmp/omb-foss/browser-connection.json OMB_LICENSE_KEY=omb1.not.real \
-            node --experimental-strip-types server/index.ts > /tmp/omb-foss/server.log 2>&1 &
+            node --experimental-strip-types be/ai/server/index.ts > /tmp/omb-foss/server.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://127.0.0.1:18797/api/health >/dev/null && break; sleep 1; done
           curl -sf http://127.0.0.1:18797/api/edition | tee /tmp/omb-foss/edition.json; echo
           grep -q '"edition":"oss"' /tmp/omb-foss/edition.json
@@ -481,26 +481,26 @@ jobs:
   relay:
     needs: static
     if: contains(needs.static.outputs.jobs, '"relay"')
-    # relay/ is its own pnpm root with its own lockfile, so this installs only the relay's dependencies. The nightly run
+    # be/ai/relay/ is its own pnpm root with its own lockfile, so this installs only the relay's dependencies. The nightly run
     # fuzzes the pre-auth path for ten minutes, a pull request for twenty seconds.
     name: relay typecheck + tests + fuzz + audit
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
       run:
-        working-directory: relay
+        working-directory: be/ai/relay
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: pnpm/action-setup@ff378ebe6b225b0680b81c1ad4498ae0d1d3a5e3 # v6.0.10
         with:
-          package_json_file: relay/package.json
+          package_json_file: be/ai/relay/package.json
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: pnpm
-          cache-dependency-path: relay/pnpm-lock.yaml
+          cache-dependency-path: be/ai/relay/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - name: Audit the production dependencies
         run: pnpm audit --prod --audit-level high
@@ -558,13 +558,13 @@ jobs:
           # command a developer runs by hand. The token is created in the
           # Cloudflare dashboard with Workers Scripts:Edit on the broker
           # account; store it as the CLOUDFLARE_API_TOKEN repo secret.
-          command: deploy --config cloudflare/composio-broker/wrangler.jsonc
+          command: deploy --config be/ai/cloudflare/composio-broker/wrangler.jsonc
 
   ui-smoke:
     needs: static
     if: contains(needs.static.outputs.jobs, '"ui-smoke"')
     # Advisory, outside the required `test` matrix: the renderer recipe in
-    # docs/verification/chat-ui.md run by a machine. It downloads the pinned
+    # devops/docs/agent-app/verification/chat-ui.md run by a machine. It downloads the pinned
     # agent-browser release (digest verified) and its Chrome, drives the real
     # <App/> against the isolated fake-engine fixture, and keeps the screenshot.
     name: renderer smoke (control-omb ui, Ubuntu 24.04)
@@ -590,7 +590,7 @@ jobs:
         env:
           OMB_UI_E2E: "1"
           OMB_UI_EVIDENCE_DIR: .omb-scratch/verify-evidence
-        run: pnpm exec vitest run scripts/testing/control-omb-ui.e2e.test.ts scripts/testing/bot-tools-ui.e2e.test.ts scripts/testing/thinking-timer-ui.e2e.test.ts scripts/testing/team-share-ui.e2e.test.ts scripts/testing/org-library-ui.e2e.test.ts scripts/testing/presets-ui.e2e.test.ts scripts/testing/browser-evidence.e2e.test.ts scripts/testing/browser-fill.e2e.test.ts scripts/testing/rich-table-composer-ui.e2e.test.ts scripts/testing/computer-panel-focus-ui.e2e.test.ts scripts/testing/mobile-code-blocks-ui.e2e.test.ts scripts/testing/inline-page-height-ui.e2e.test.ts scripts/testing/room-pages-ui.e2e.test.ts
+        run: pnpm exec vitest run --config fe/desktop/vite.config.ts --root . devops/scripts/agent-app/testing/control-omb-ui.e2e.test.ts devops/scripts/agent-app/testing/bot-tools-ui.e2e.test.ts devops/scripts/agent-app/testing/thinking-timer-ui.e2e.test.ts devops/scripts/agent-app/testing/team-share-ui.e2e.test.ts devops/scripts/agent-app/testing/org-library-ui.e2e.test.ts devops/scripts/agent-app/testing/presets-ui.e2e.test.ts devops/scripts/agent-app/testing/browser-evidence.e2e.test.ts devops/scripts/agent-app/testing/browser-fill.e2e.test.ts devops/scripts/agent-app/testing/rich-table-composer-ui.e2e.test.ts devops/scripts/agent-app/testing/computer-panel-focus-ui.e2e.test.ts devops/scripts/agent-app/testing/mobile-code-blocks-ui.e2e.test.ts devops/scripts/agent-app/testing/inline-page-height-ui.e2e.test.ts devops/scripts/agent-app/testing/room-pages-ui.e2e.test.ts
       - name: Upload the renderer screenshot
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
@@ -611,7 +611,7 @@ jobs:
     if: contains(needs.static.outputs.jobs, '"browser-identity"')
     # Advisory, outside the required gate: the pinned agent-browser drives a
     # real Chrome for Testing through OMB's launcher and identity connection
-    # (scripts/testing/browser-identity.e2e.test.ts): a 1280x720 page whose
+    # (devops/scripts/agent-app/testing/browser-identity.e2e.test.ts): a 1280x720 page whose
     # user agent and client hints are the browser's own in the page, a
     # worker, a service worker and a cross-site frame. On Windows this is
     # also the check that the 0.36.0-omb.1 engine starts Chrome through the
@@ -643,7 +643,7 @@ jobs:
           OMB_UI_E2E: "1"
         # One file at a time: a runner's first Chrome launch is slow (on Windows it waits for a scan of the binary), and two
         # at once ran the identity probe past its 30 s.
-        run: pnpm exec vitest run scripts/testing/browser-identity.e2e.test.ts scripts/testing/browser-passkey.e2e.test.ts --no-file-parallelism
+        run: pnpm exec vitest run --config fe/desktop/vite.config.ts --root . devops/scripts/agent-app/testing/browser-identity.e2e.test.ts devops/scripts/agent-app/testing/browser-passkey.e2e.test.ts --no-file-parallelism
 
   package-linux:
     needs: static
@@ -671,7 +671,7 @@ jobs:
         run: dbus-run-session -- xvfb-run -a pnpm smoke:cua-x11-input
       - name: Package from the verified offline CUA stage
         run: pnpm package:linux:offline
-      - run: node scripts/verify-linux-package.mjs
+      - run: node devops/scripts/agent-app/verify-linux-package.mjs
       - name: Match a normal Ubuntu package parent on the ephemeral runner
         run: |
           test ! -L /opt
@@ -686,14 +686,14 @@ jobs:
         run: |
           deb=(release/*.deb)
           test "${#deb[@]}" -eq 1
-          sudo --preserve-env=CI,RUNNER_TEMP node scripts/smoke-deb-upgrade.mjs "${deb[0]}"
+          sudo --preserve-env=CI,RUNNER_TEMP node devops/scripts/agent-app/smoke-deb-upgrade.mjs "${deb[0]}"
       - name: Configure Chromium sandbox for the unpacked app
         run: |
           sudo chown root:root release/linux-unpacked/chrome-sandbox
           sudo chmod 4755 release/linux-unpacked/chrome-sandbox
           test "$(stat -c '%U:%G %a' release/linux-unpacked/chrome-sandbox)" = "root:root 4755"
       - name: Verify the installed browser with Ubuntu sandbox restrictions
-        run: node scripts/smoke-browser-bundle.mjs --resources /opt/OpenMausBot/resources
+        run: node devops/scripts/agent-app/smoke-browser-bundle.mjs --resources /opt/OpenMausBot/resources
       - name: Launch packaged app and verify lifecycle
         env:
           OMB_KEEP_SMOKE_DIR: "1"
@@ -723,7 +723,7 @@ jobs:
     # where the vitest shards do; the full lane all three; pushes to main and
     # merge groups leave it out), then on Linux inside the server image's
     # runtime as a non-root user. Every S4 suite also fails when its trace holds Runtime.enable or
-    # another forbidden CDP method (docs/ci.md).
+    # another forbidden CDP method (devops/docs/agent-app/ci.md).
     name: browser driver S4 (${{ matrix.os }})
     strategy:
       fail-fast: false
@@ -765,7 +765,7 @@ jobs:
           OMB_CDP_E2E: "1"
         shell: bash
         run: |
-          run=(pnpm exec vitest run server/browser/cdp/s4- server/browser/checklist.e2e server/browser/passkey-wall.e2e server/browser/viewers/viewers.e2e server/browser/viewers/stream-v2.e2e --reporter=verbose --silent=false --reporter=github-actions)
+          run=(pnpm exec vitest run --config fe/desktop/vite.config.ts --root . be/ai/server/browser/cdp/s4- be/ai/server/browser/checklist.e2e be/ai/server/browser/passkey-wall.e2e be/ai/server/browser/viewers/viewers.e2e be/ai/server/browser/viewers/stream-v2.e2e --reporter=verbose --silent=false --reporter=github-actions)
           if [ "$RUNNER_OS" = "Linux" ]; then xvfb-run -a "${run[@]}"; else "${run[@]}"; fi
       - name: The runner's Google Chrome did not change during the run
         if: ${{ !cancelled() && runner.os == 'macOS' }}
@@ -779,9 +779,9 @@ jobs:
         # even when the host leg failed: they test different Chromes.
         if: ${{ !cancelled() && runner.os == 'Linux' }}
         run: |
-          docker build --target runtime -t omb-runtime:s4 .
-          mkdir -p node_modules/.vite && chmod a+w . node_modules/.vite
+          docker build -f devops/deploy/Dockerfile --target runtime -t omb-runtime:s4 .
+          mkdir -p node_modules/.vite && chmod a+w . fe/desktop node_modules/.vite
           docker run --rm --init --shm-size=512m --user maus -e CI=true \
             -e OMB_CDP_CHROME=/opt/openmausbot-browser/chrome -e OMB_CDP_HOST=container -e OMB_BROWSER_SANDBOX=0 \
             -v "$PWD:/src" -w /src omb-runtime:s4 \
-            node node_modules/vitest/vitest.mjs run server/browser/cdp/s4- server/browser/checklist.e2e server/browser/passkey-wall.e2e server/browser/viewers/viewers.e2e server/browser/viewers/stream-v2.e2e --reporter=verbose --silent=false
+            node node_modules/vitest/vitest.mjs run --config fe/desktop/vite.config.ts --root . be/ai/server/browser/cdp/s4- be/ai/server/browser/checklist.e2e be/ai/server/browser/passkey-wall.e2e be/ai/server/browser/viewers/viewers.e2e be/ai/server/browser/viewers/stream-v2.e2e --reporter=verbose --silent=false

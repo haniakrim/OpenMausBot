@@ -12,12 +12,12 @@ body:
     attributes:
       label: Area
       options:
-        - Chat UI (src/)
-        - Harness server / API (server/)
+        - Chat UI (fe/desktop/src/)
+        - Harness server / API (be/ai/server/)
         - Provider drivers (claude / codex / grok)
         - Computer use (cloud box / local)
         - Connected apps (Composio)
-        - Desktop shell / packaging (electron/)
+        - Desktop shell / packaging (fe/desktop/electron/)
         - Docs
         - Not sure
     validations:

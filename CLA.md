@@ -1,6 +1,6 @@
 # OpenMausBot Contributor License Agreement
 
-This agreement covers contributions to the `enterprise/` directory of the
+This agreement covers contributions to the `be/ai/enterprise/` directory of the
 OpenMausBot repository, which is licensed under the OpenMausBot Enterprise
 License rather than Apache 2.0. Contributions anywhere else do not require
 this agreement or a DCO sign-off (see [LICENSING.md](LICENSING.md)).
@@ -9,7 +9,7 @@ You sign by commenting on your pull request:
 
 > I have read the CLA Document and I hereby sign the CLA
 
-It applies to every contribution you make to `enterprise/` from then on. It is
+It applies to every contribution you make to `be/ai/enterprise/` from then on. It is
 modelled on the Apache Individual Contributor License Agreement, shortened.
 
 1. **Copyright license.** You grant Milind Soni ("the Project Owner") and

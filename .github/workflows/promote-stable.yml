@@ -3,8 +3,8 @@ name: Promote to stable
 # Makes one released version the `stable` channel that self-hosted servers follow. Run by hand, after our own Clouds
 # have run the version for 48 hours. Nothing is built: the `stable` tags of the server image (linux/amd64 and
 # linux/arm64) and of the Cloud home image move to the digests the release already published, and stable.json on the
-# `channels` branch records them. A server reads that file over plain HTTPS (server/update-check.ts,
-# deploy/update.sh). `latest` keeps following main and is not touched.
+# `channels` branch records them. A server reads that file over plain HTTPS (be/ai/server/update-check.ts,
+# devops/deploy/update.sh). `latest` keeps following main and is not touched.
 on:
   workflow_dispatch:
     inputs:
@@ -62,12 +62,12 @@ jobs:
             echo "::error::Tick the box that says our own Clouds have run this version for 48 hours."
             exit 1
           fi
-          version=$(node scripts/stable-channel.mjs version "$VERSION_INPUT")
+          version=$(node devops/scripts/agent-app/stable-channel.mjs version "$VERSION_INPUT")
           if ! gh release view "v$version" --repo "$GITHUB_REPOSITORY" --json tagName,isDraft,isPrerelease,publishedAt,url > "$RUNNER_TEMP/release.json"; then
             echo "::error::v$version is not a release of $GITHUB_REPOSITORY. Stable only takes a version that was released."
             exit 1
           fi
-          node scripts/stable-channel.mjs check-release --version "$version" --release "$RUNNER_TEMP/release.json" $([ "$URGENT" = "true" ] && echo --urgent)
+          node devops/scripts/agent-app/stable-channel.mjs check-release --version "$version" --release "$RUNNER_TEMP/release.json" $([ "$URGENT" = "true" ] && echo --urgent)
           echo "version=$version" >> "$GITHUB_OUTPUT"
           # Image references must be lowercase; the repository name is not.
           echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
@@ -89,8 +89,8 @@ jobs:
           digest_of() { docker buildx imagetools inspect "$1" --format '{{json .Manifest}}' | jq -er .digest; }
           docker buildx imagetools inspect --raw "$IMAGE:v$VERSION" > "$RUNNER_TEMP/server-index.json"
           docker buildx imagetools inspect --raw "$IMAGE-cloud-home:v$VERSION" > "$RUNNER_TEMP/home-index.json"
-          node scripts/stable-channel.mjs check-image --index "$RUNNER_TEMP/server-index.json" --platforms linux/amd64,linux/arm64 --name "$IMAGE:v$VERSION"
-          node scripts/stable-channel.mjs check-image --index "$RUNNER_TEMP/home-index.json" --platforms linux/amd64 --name "$IMAGE-cloud-home:v$VERSION"
+          node devops/scripts/agent-app/stable-channel.mjs check-image --index "$RUNNER_TEMP/server-index.json" --platforms linux/amd64,linux/arm64 --name "$IMAGE:v$VERSION"
+          node devops/scripts/agent-app/stable-channel.mjs check-image --index "$RUNNER_TEMP/home-index.json" --platforms linux/amd64 --name "$IMAGE-cloud-home:v$VERSION"
           echo "server=$IMAGE@$(digest_of "$IMAGE:v$VERSION")" >> "$GITHUB_OUTPUT"
           echo "home=$IMAGE-cloud-home@$(digest_of "$IMAGE-cloud-home:v$VERSION")" >> "$GITHUB_OUTPUT"
 
@@ -121,7 +121,7 @@ jobs:
             echo "There is no channels branch yet: this is the first promotion."
           fi
           echo "first=$([ ${#current[@]} = 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          node scripts/stable-channel.mjs record --version "$VERSION" --image "$SERVER" --cloud-home "$HOME_IMAGE" \
+          node devops/scripts/agent-app/stable-channel.mjs record --version "$VERSION" --image "$SERVER" --cloud-home "$HOME_IMAGE" \
             --release "$RUNNER_TEMP/release.json" "${current[@]}" $([ "$ALLOW_OLDER" = "true" ] && echo --allow-older) > "$RUNNER_TEMP/stable.json"
           cat "$RUNNER_TEMP/stable.json"
 

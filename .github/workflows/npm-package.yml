@@ -8,12 +8,12 @@ on:
     tags: ["v*"]
   pull_request:
     paths:
-      - server/cli.ts
-      - server/tunnel.ts
-      - server/tailscale.ts
-      - server/pair-cli.ts
-      - scripts/build-npm-package.mjs
-      - scripts/bundle-server.mjs
+      - be/ai/server/cli.ts
+      - be/ai/server/tunnel.ts
+      - be/ai/server/tailscale.ts
+      - be/ai/server/pair-cli.ts
+      - devops/scripts/agent-app/build-npm-package.mjs
+      - devops/scripts/agent-app/bundle-server.mjs
       - .github/workflows/npm-package.yml
 
 permissions:
@@ -33,7 +33,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
         env:
           ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
-      - run: pnpm build:server && pnpm exec vite build && node scripts/build-npm-package.mjs
+      - run: pnpm build:server && pnpm exec vite build fe/desktop && node devops/scripts/agent-app/build-npm-package.mjs
       - name: Prove the packed tarball runs with no node_modules at all
         run: |
           set -euo pipefail

@@ -1,8 +1,10 @@
 # OpenMausBot agent notes
 
 Before claiming a server or conversation change works, follow
-[`docs/verification/README.md`](docs/verification/README.md). Always launch an
+[`devops/docs/agent-app/verification/README.md`](devops/docs/agent-app/verification/README.md). Always launch an
 isolated fixture; never verify mutations against the user's live app or data.
+
+The rulebook index is [`devops/docs/rules/AI_RULES.md`](devops/docs/rules/AI_RULES.md).
 
 ## Comments
 
@@ -11,7 +13,7 @@ Write a comment only for what the code cannot say:
 - a license or attribution notice;
 - a fact forced by something outside this code (a vendor, CLI, OS, browser,
   Electron or protocol behaviour), with its version when it has one;
-- the doc comment of a public contract: the wire types in `shared/`, the
+- the doc comment of a public contract: the wire types in `be/ai/shared/`, the
   driver interface, the preload bridge, `config.json` fields people edit;
 - a link to an upstream issue;
 - a security invariant or a known open risk.

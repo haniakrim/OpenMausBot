@@ -8,21 +8,21 @@ on:
     branches: [main]
     tags: ["v*"]
     paths:
-      - Dockerfile
+      - devops/deploy/Dockerfile
       - .dockerignore
-      - deploy/**
-      - server/**
-      - src/**
-      - enterprise/**
-      - scripts/bundle-server.mjs
+      - devops/deploy/**
+      - be/ai/server/**
+      - fe/desktop/src/**
+      - be/ai/enterprise/**
+      - devops/scripts/agent-app/bundle-server.mjs
       - package.json
       - pnpm-lock.yaml
       - .github/workflows/docker.yml
   pull_request:
     paths:
-      - Dockerfile
+      - devops/deploy/Dockerfile
       - .dockerignore
-      - deploy/**
+      - devops/deploy/**
       - .github/workflows/docker.yml
 
 permissions:
@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build image
-        run: docker build -t openmausbot:ci .
+        run: docker build -f devops/deploy/Dockerfile -t openmausbot:ci .
       - name: Boot the container and prove the server + UI answer
         run: |
           set -euo pipefail
@@ -51,7 +51,7 @@ jobs:
           docker logs omb | tail -5
       - name: Prove the image finds its enterprise layer
         # The image ships dist-server/ alone, so the bundled layer sits inside
-        # the server root (server/enterprise.ts looks there after the sibling
+        # the server root (be/ai/server/enterprise.ts looks there after the sibling
         # folder). A key that is not genuine proves the layer loaded and
         # checked it; a missing layer would report "no enterprise layer exists"
         # and a licensed self-hoster would silently run the open-source edition.
@@ -81,7 +81,7 @@ jobs:
           timeout 15 docker exec omb agent-browser --session ci-browser set viewport 1280 720
           test "$(timeout 15 docker exec omb agent-browser --session ci-browser eval "innerWidth+'x'+innerHeight")" = '"1280x720"'
           # The harness reads and pictures a bot's browser over the engine's
-          # loopback relay (server/browser-relay.ts); the daemon writes the file.
+          # loopback relay (be/ai/server/browser-relay.ts); the daemon writes the file.
           port=$(timeout 15 docker exec omb agent-browser --session ci-browser stream status --json | jq -r .data.port)
           answer=$(docker exec omb curl -sf -X POST -H 'content-type: application/json' -H "origin: http://127.0.0.1:$port" \
             --data '{"action":"screenshot","path":"/tmp/relay.jpg","format":"jpeg","quality":70}' "http://127.0.0.1:$port/api/command")
@@ -109,7 +109,7 @@ jobs:
           fi
           echo "unreachable on $ip: loopback-only holds"
       - name: Run the tenant stack (server + Caddy) and pair like a browser would
-        # deploy/docker-compose.yml is the product here: through TLS, prove that
+        # devops/deploy/docker-compose.yml is the product here: through TLS, prove that
         # nothing but the descriptor and the UI shell is served before pairing,
         # that a code minted inside the container turns into a Secure cookie
         # session, that the cookie is same-origin only, that the event stream is
@@ -118,12 +118,12 @@ jobs:
           set -euo pipefail
           docker rm -f omb >/dev/null
           docker tag openmausbot:ci ghcr.io/milind-soni/openmausbot:latest
-          printf 'DOMAIN=localhost\nENGINES=\n' > deploy/.env
-          docker compose -f deploy/docker-compose.yml up -d --no-build
+          printf 'DOMAIN=localhost\nENGINES=\n' > devops/deploy/.env
+          docker compose -f devops/deploy/docker-compose.yml up -d --no-build
           for i in $(seq 1 45); do
             curl -sk -o /dev/null --max-time 2 https://localhost/.well-known/openmausbot/environment && break
             sleep 2
-            if [ "$i" = "45" ]; then docker compose -f deploy/docker-compose.yml logs; echo "caddy never answered"; exit 1; fi
+            if [ "$i" = "45" ]; then docker compose -f devops/deploy/docker-compose.yml logs; echo "caddy never answered"; exit 1; fi
           done
           code() { curl -sk -o /dev/null -w '%{http_code}' --max-time 5 "$@"; }
           body() { curl -sk --max-time 10 "$@"; }
@@ -134,7 +134,7 @@ jobs:
           grep -q 'pair this device' <<<"$(body $H/api/bots)"
           grep -qi '<html' <<<"$(body $H/pair)"                                    # the UI shell is served so /pair can load
           test "$(code http://localhost/)" = 308                                   # HTTP redirects to HTTPS
-          pairing=$(docker compose -f deploy/docker-compose.yml exec -T omb node dist-server/pair-cli.js --label ci)
+          pairing=$(docker compose -f devops/deploy/docker-compose.yml exec -T omb node dist-server/pair-cli.js --label ci)
           echo "$pairing"
           pcode=$(grep -o 'code=[A-Z2-9-]*' <<<"$pairing" | head -1 | cut -d= -f2)
           test -n "$pcode"
@@ -159,7 +159,7 @@ jobs:
           # Caddy has its own container and reaches the server over a Unix socket, so HTTPS comes back by itself
           # whenever the server does. When Caddy shared the server's network, each of these left it in the old,
           # dead network: 443 refused while both containers said healthy.
-          C="docker compose -f deploy/docker-compose.yml"
+          C="docker compose -f devops/deploy/docker-compose.yml"
           back() { # $1: what happened; HTTPS through Caddy answers again within two minutes, and is still remote
             for i in $(seq 1 60); do
               if grep -q '^{"app":"openmausbot"}$' <<<"$(body $H/api/health || true)" && [ "$(code $H/api/bots)" = 403 ]; then echo "HTTPS back after: $1"; return 0; fi
@@ -175,10 +175,10 @@ jobs:
           $C stop omb && $C start omb && back "docker compose stop omb, then start omb"
           $C stop && $C start && back "docker compose stop, then start (the documented backup)"
           grep -q error <<<"$(body -X POST $H/hooks/wh_nope)"                      # hooks reach the receiver's socket again
-          docker compose -f deploy/docker-compose.yml down -v
+          docker compose -f devops/deploy/docker-compose.yml down -v
       - name: Cloud Pro home image (--target cloud-home) boots, stays private and pairs on a signed request
         # The Fly home machine, built from the same runtime as the image above, with the environment
-        # openmaus-cloud's provisioner writes (docs/cloud-pro.md): Caddy on
+        # openmaus-cloud's provisioner writes (devops/docs/agent-app/cloud-pro.md): Caddy on
         # :8080 is the only listener, a forwarded request is never the
         # loopback owner, a bad boot contract never serves, the launcher stays
         # root (and runs only root's code) while the server and the edge run as
@@ -189,7 +189,7 @@ jobs:
         # included models, and tells the paired app to open its engine sign-in.
         run: |
           set -euo pipefail
-          docker build --target cloud-home --build-arg CLOUD_HOME_ENGINES= -t omb-cloud-home:ci .
+          docker build -f devops/deploy/Dockerfile --target cloud-home --build-arg CLOUD_HOME_ENGINES= -t omb-cloud-home:ci .
           rand43() { openssl rand -base64 32 | tr '+/' '-_' | tr -d '=\n'; }
           b64url() { base64 | tr '+/' '-_' | tr -d '=\n'; }
           secret=$(rand43)
@@ -501,7 +501,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build image
-        run: docker build -t openmausbot:arm64 .
+        run: docker build -f devops/deploy/Dockerfile -t openmausbot:arm64 .
       - name: Boot the container; prove the server, UI, DuckDB and browser work on arm64
         run: |
           set -euo pipefail
@@ -573,6 +573,7 @@ jobs:
       - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: .
+          file: devops/deploy/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -601,6 +602,7 @@ jobs:
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: .
+          file: devops/deploy/Dockerfile
           target: cloud-home
           build-args: |
             CHROME_CACHE_TAG=${{ steps.keys.outputs.chrome }}

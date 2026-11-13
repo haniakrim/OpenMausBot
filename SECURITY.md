@@ -18,9 +18,9 @@ You'll get a response as soon as possible, normally within a few days.
   built-in agent integrations use narrower per-turn capabilities. Anything that makes it reachable
   from off-machine without a paired session, lets one bot reuse another turn's capability, or lets
   a local *unprivileged other user* drive it is a vulnerability. On a hosted or shared workspace
-  (service loopback trust, see `docs/self-hosting.md`) a session-less loopback caller — which
+  (service loopback trust, see `devops/docs/agent-app/self-hosting.md`) a session-less loopback caller — which
   includes every bot's shell — may use only the routes in `SERVICE_ALLOW`
-  (`server/request-auth.ts`); reaching an admin route or approving a card that way is a
+  (`be/ai/server/request-auth.ts`); reaching an admin route or approving a card that way is a
   vulnerability. Known and documented, not yet closed: that caller keeps the Slack worker's
   guarded routes, so a bot's shell can post into an existing Full-access thread, or open one while
   shared Full access is on, and get Full-access work done without a card. A worker-only relay token
@@ -39,9 +39,9 @@ You'll get a response as soon as possible, normally within a few days.
   access**. Full access is a standing user decision to approve provider permission requests; it must
   never answer questions or silently broaden product-level confirmations such as credentials,
   routines, skills, or peer communication.
-- The announcements file (`announcements/announcements.json`, downloaded from `main`; `docs/announcements.md`) is
+- The announcements file (`be/ai/announcements/announcements.json`, downloaded from `main`; `devops/docs/agent-app/announcements.md`) is
   untrusted input to every install. A card that renders markup, runs anything, navigates the app's own window, opens a
-  non-https address, loads a picture from outside the repository's `announcements/` folder, or makes the download carry
+  non-https address, loads a picture from outside the repository's `be/ai/announcements/` folder, or makes the download carry
   anything identifying the install or the person is a vulnerability.
 - Spawning must never route user-influenced strings through a shell. Report any `shell: true` /
   `cmd.exe` string-building you find.

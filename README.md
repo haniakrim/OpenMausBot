@@ -53,7 +53,7 @@ Talk to them like contacts. Watch them work. Approve what matters.
 <a href="https://boat.dev">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/sponsors/boat-logo-white.svg">
-    <img src="docs/assets/sponsors/boat-logo.svg" alt="Boat (boat.dev)" height="34">
+    <img src="devops/docs/agent-app/assets/sponsors/boat-logo.svg" alt="Boat (boat.dev)" height="34">
   </picture>
 </a>
 
@@ -65,20 +65,38 @@ Talk to them like contacts. Watch them work. Approve what matters.
 <a href="https://modelgo.ai/?utm_source=openmausbot&utm_medium=sponsorship&utm_content=readme&campaign_id=openmausbot&ad_group_id=readme">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/sponsors/modelgo-logo-white.svg">
-    <img src="docs/assets/sponsors/modelgo-logo.svg" alt="ModelGo (modelgo.ai)" height="22">
+    <img src="devops/docs/agent-app/assets/sponsors/modelgo-logo.svg" alt="ModelGo (modelgo.ai)" height="22">
   </picture>
 </a>
 
 <br>
 <br>
 
-<img src="docs/screenshots/hero.png" alt="OpenMausBot — a Telegram-style chat app where every chat is a real AI agent" width="900">
+<img src="devops/docs/agent-app/screenshots/hero.png" alt="OpenMausBot — a Telegram-style chat app where every chat is a real AI agent" width="900">
 
 </div>
 
 ---
 
 > ⚠️ **No affiliation with any cryptocurrency.** OpenMausBot has no token. Any coin using the OpenMausBot, Maus, or SupaMaus name is not created, endorsed, or affiliated with this project or its maintainer. I have received no tokens, payment, or allocation from anyone, and I will not be endorsing any token.
+
+## Repository layout
+
+| Path | Purpose |
+| --- | --- |
+| `be/ai/` | Node agent server and services: `server/`, `shared/`, `companion/`, `connector/`, `relay/`, `cloudflare/`, `enterprise/`, `evals/`, `skills/`, `announcements/` |
+| `fe/desktop/` | Vite + React app and Electron shell: `src/`, `electron/`, `public/`, `build/`, `vite.config.ts` |
+| `fe/docs-site/` | Documentation website |
+| `fe_mobile/` | Placeholder for a Flutter client (not implemented) |
+| `devops/docs/agent-app/` | Design notes, guides and verification docs |
+| `devops/docs/rules/` | Agent rulebook and QA strategy |
+| `devops/scripts/agent-app/` | Build, release and test tooling |
+| `devops/deploy/` | `Dockerfile`, `compose.yaml`, installers and self-hosting recipes |
+| `devops/third_party/` | Vendored upstream code and provenance records |
+| `test_unit_be/`, `test_unit_fe/`, `test_st_api/`, `test_st_ui/` | Where each test suite lives today (tests are colocated with the code) |
+| `Makefile` | Entry point wrapping the `pnpm` scripts (`make help`) |
+
+`package.json`, `pnpm-workspace.yaml`, `electron-builder.yml` and build output (`dist/`, `dist-server/`, `release/`) stay at the root.
 
 ## Why
 
@@ -127,7 +145,7 @@ and a decision guide in five questions: [Which AI agent should I use?](https://w
 A model picker with a provider rail — Claude and Codex models side by side, defaults marked, unavailable
 providers dimmed with the reason. Switch a bot's model mid-conversation.
 
-<img src="docs/screenshots/model-picker.png" alt="Model picker with provider rail" width="100%">
+<img src="devops/docs/agent-app/screenshots/model-picker.png" alt="Model picker with provider rail" width="100%">
 
 </td>
 <td width="50%" valign="top">
@@ -137,7 +155,7 @@ providers dimmed with the reason. Switch a bot's model mid-conversation.
 Open the Computer panel and the bot's cloud desktop spins up on its own — live screen preview while it
 works, "Open desktop" to take over in your browser, or point the bot at *this Mac* instead.
 
-<img src="docs/screenshots/computer-panel.png" alt="Computer panel with live screen preview" width="100%">
+<img src="devops/docs/agent-app/screenshots/computer-panel.png" alt="Computer panel with live screen preview" width="100%">
 
 </td>
 </tr>
@@ -149,7 +167,7 @@ works, "Open desktop" to take over in your browser, or point the bot at *this Ma
 Shell commands, file edits, and questions surface as inline cards — Allow / Deny / answer in chat. A
 permission broker turns every risky action into a decision you make, for cloud and local computers alike.
 
-<img src="docs/screenshots/approval-card.png" alt="Approval and question cards in chat" width="100%">
+<img src="devops/docs/agent-app/screenshots/approval-card.png" alt="Approval and question cards in chat" width="100%">
 
 </td>
 <td width="50%" valign="top">
@@ -159,7 +177,7 @@ permission broker turns every risky action into a decision you make, for cloud a
 A one-click marketplace over Composio Sessions: Gmail, Slack, GitHub, Notion, Linear and hundreds more.
 OAuth once, and every bot can use them as tools.
 
-<img src="docs/screenshots/marketplace.png" alt="Connected apps marketplace" width="100%">
+<img src="devops/docs/agent-app/screenshots/marketplace.png" alt="Connected apps marketplace" width="100%">
 
 </td>
 </tr>
@@ -171,7 +189,7 @@ OAuth once, and every bot can use them as tools.
 Right-click any bot: pin, mark unread, edit profile, duplicate, copy conversation ID, hide, delete. It's a
 messaging app — your agents behave like contacts.
 
-<img src="docs/screenshots/context-menu.png" alt="Bot context menu" width="100%">
+<img src="devops/docs/agent-app/screenshots/context-menu.png" alt="Bot context menu" width="100%">
 
 </td>
 <td width="50%" valign="top">
@@ -181,7 +199,7 @@ messaging app — your agents behave like contacts.
 Paste credentials in App Settings — they persist locally and the provider fleet hot-reloads instantly.
 Secrets are write-only: the UI only ever sees "configured" flags.
 
-<img src="docs/screenshots/app-settings.png" alt="App-level settings with API keys" width="100%">
+<img src="devops/docs/agent-app/screenshots/app-settings.png" alt="App-level settings with API keys" width="100%">
 
 </td>
 </tr>
@@ -197,7 +215,7 @@ channel and its bots under a named context, then rename it or change its members
 
 Add a Cloudflare Workers AI token with its account ID, a TypeSafe Jev key, or an OpenRouter key and model, in **Settings › AI › Routing and extraction** and rooms set to **Auto** pick the bot
 that fits each un-mentioned message in a few hundred milliseconds, falling back to the room's lead whenever the decision model is off or unsure.
-See [docs/decision-model.md](docs/decision-model.md).
+See [devops/docs/agent-app/decision-model.md](devops/docs/agent-app/decision-model.md).
 
 ### 📦 Install a complete team from one Markdown file
 
@@ -220,11 +238,11 @@ file: its bots with their instructions, pictures and skills, group chats, routin
 Chief of Staff, connection slots and each bot's starter notes (untick them to leave them out). The dialog
 shows exactly what the file holds before you save it. Chat history, keys and passwords, model choices and
 computers never go in, and anything that looks like a secret is removed from the text. Whoever imports it
-gets new bots on Ask, skills switched off and routines paused. See [docs/team-sharing.md](docs/team-sharing.md).
+gets new bots on Ask, skills switched off and routines paused. See [devops/docs/agent-app/team-sharing.md](devops/docs/agent-app/team-sharing.md).
 Desktops connected to an organization also get **Templates → From {Organization}**: the packages its Admin shares,
-added with one click, skills switched on. See [docs/org-library.md](docs/org-library.md).
+added with one click, skills switched on. See [devops/docs/agent-app/org-library.md](devops/docs/agent-app/org-library.md).
 Your New bot defaults can travel too, as a **preset bot** that appears in New bot (in a team file, or on
-their own with **Share as preset…**). See [docs/presets.md](docs/presets.md).
+their own with **Share as preset…**). See [devops/docs/agent-app/presets.md](devops/docs/agent-app/presets.md).
 
 ### 🎧 Bots that talk back
 
@@ -308,12 +326,12 @@ flowchart LR
 
 | Layer | Where | What it does |
 |---|---|---|
-| Drivers | `server/drivers/` | One per provider: Claude, Codex, and Grok Build over their local CLIs (stream-JSON / JSON-RPC / ACP), plus a cloud-computer agent. Unknown drivers degrade to "unavailable", never crash the fleet. |
-| Harness | `server/harness/` | Registry (configs → live instances) and the fan-in event bus every client folds. |
-| API | `server/index.ts` | Bots, turns, approvals, model catalog, computer lifecycle, connectors, config — HTTP + SSE. |
-| Voice | `server/tts/` | ElevenLabs, Fish Audio, Grok (xAI), built-in Mac voices, or local Chatterbox. Cloud keys stay on the harness; markdown is rewritten into something worth hearing before it is spoken. |
-| App | `src/` | The chat shell. Server-backed store, one reducer, zero client-side transports. |
-| Desktop | `electron/` | macOS, Windows, and Ubuntu shells with an embedded harness and platform capabilities; Apple speech stays macOS-only, Ubuntu Xorg has opt-in local control, and Wayland remains fail-closed. |
+| Drivers | `be/ai/server/drivers/` | One per provider: Claude, Codex, and Grok Build over their local CLIs (stream-JSON / JSON-RPC / ACP), plus a cloud-computer agent. Unknown drivers degrade to "unavailable", never crash the fleet. |
+| Harness | `be/ai/server/harness/` | Registry (configs → live instances) and the fan-in event bus every client folds. |
+| API | `be/ai/server/index.ts` | Bots, turns, approvals, model catalog, computer lifecycle, connectors, config — HTTP + SSE. |
+| Voice | `be/ai/server/tts/` | ElevenLabs, Fish Audio, Grok (xAI), built-in Mac voices, or local Chatterbox. Cloud keys stay on the harness; markdown is rewritten into something worth hearing before it is spoken. |
+| App | `fe/desktop/src/` | The chat shell. Server-backed store, one reducer, zero client-side transports. |
+| Desktop | `fe/desktop/electron/` | macOS, Windows, and Ubuntu shells with an embedded harness and platform capabilities; Apple speech stays macOS-only, Ubuntu Xorg has opt-in local control, and Wayland remains fail-closed. |
 
 ### Orchestrate OpenMausBot over MCP
 
@@ -322,7 +340,7 @@ deliberately bounded team control plane: inspect bots and channels, read/search 
 create and configure bots/channels/tasks, send work, wait for completion, switch models, and interrupt turns.
 It does **not** expose approval grants, deletion, arbitrary settings, credentials, or computer lifecycle.
 
-See [MCP server setup and tool reference](docs/mcp-server.md).
+See [MCP server setup and tool reference](devops/docs/agent-app/mcp-server.md).
 
 ### Run it from scripts and CI
 
@@ -336,7 +354,7 @@ openmausbot team apply team.yaml
 openmausbot run "Room Lead" "Rehearse the launch of https://example.com" --export ./out
 ```
 
-See [Run OpenMausBot from scripts and CI](docs/headless-cli.md).
+See [Run OpenMausBot from scripts and CI](devops/docs/agent-app/headless-cli.md).
 
 ## Quick start
 
@@ -349,8 +367,8 @@ See [Run OpenMausBot from scripts and CI](docs/headless-cli.md).
 | **Windows** (x64) | [OpenMausBot-setup.exe](https://github.com/milind-soni/OpenMausBot/releases/latest/download/OpenMausBot-setup.exe) | Run it — one-click, per-user, no admin rights. The installer isn't code-signed yet, so SmartScreen shows "unknown publisher": **More info → Run anyway**. |
 | **Ubuntu 24.04** (x64) | [OpenMausBot-amd64.deb](https://github.com/milind-soni/OpenMausBot/releases/latest/download/OpenMausBot-amd64.deb) · [OpenMausBot.AppImage](https://github.com/milind-soni/OpenMausBot/releases/latest/download/OpenMausBot.AppImage) | Install the `.deb` with APT (recommended), or make the AppImage executable and run it. Beta; GNOME is the supported desktop. |
 
-See the [Ubuntu Desktop guide](docs/linux-desktop.md) for installation, capabilities, and troubleshooting.
-Any desktop build can also pair as a client to another Windows, macOS, or Ubuntu host over Tailscale; see [desktop-to-desktop companion mode](docs/desktop-companion.md).
+See the [Ubuntu Desktop guide](devops/docs/agent-app/linux-desktop.md) for installation, capabilities, and troubleshooting.
+Any desktop build can also pair as a client to another Windows, macOS, or Ubuntu host over Tailscale; see [desktop-to-desktop companion mode](devops/docs/agent-app/desktop-companion.md).
 
 
 **From source:**
@@ -389,12 +407,12 @@ pnpm package:linux    # Ubuntu x64: .deb + AppImage + verified CUA runtime
 
 On Windows, choose **This computer** to let a bot control the local desktop. The packaged app includes its own
 CUA driver and SDK; a separate Cua installation is not required. Local bot control is available even though the
-preview-only screen capture above is unavailable. See [Computer use & browser use](docs/computer-use-integration.md).
+preview-only screen capture above is unavailable. See [Computer use & browser use](devops/docs/agent-app/computer-use-integration.md).
 
 The Linux preview is user-initiated and never enables local bot control or Auto routing. On Xorg, the reviewed Cua
 Driver 0.41.3 runtime starts only after explicit opt-in and without its full-screen cursor overlay. On Wayland the
 app never starts it and clears legacy opt-ins while that real-seat safety gate remains unresolved. Chat, preview,
-Cloud, and Local VM remain available on both sessions. See the [Ubuntu Desktop guide](docs/linux-desktop.md) and tracking
+Cloud, and Local VM remain available on both sessions. See the [Ubuntu Desktop guide](devops/docs/agent-app/linux-desktop.md) and tracking
 issues [#29](https://github.com/milind-soni/OpenMausBot/issues/29),
 [#345](https://github.com/milind-soni/OpenMausBot/issues/345), and
 [#113](https://github.com/milind-soni/OpenMausBot/issues/113).
@@ -403,14 +421,14 @@ The Linux packager downloads only the tag-pinned upstream archive during the bui
 complete member allowlist, and inner executable hashes, then packages only the CLI and cursor-theme sidecar. The
 installed app never downloads or self-updates native automation code. Cua's MIT notice, Inter's SIL OFL, a generated
 third-party license report, and a CycloneDX inventory ship with the runtime. See
-[`third_party/cua-driver/`](third_party/cua-driver/) for the reviewed provenance record.
+[`devops/third_party/cua-driver/`](devops/third_party/cua-driver/) for the reviewed provenance record.
 
 These credentials are optional — local chat works without them. Paste a key once in **App Settings** (gear
 in the sidebar footer) when you want to enable its integration:
 
 | Credential | What it enables | Where to get it |
 |---|---|---|
-| Composio project key (`ak_…`) | Connect Gmail, GitHub, Slack, Notion, and other apps to your bots | [OpenMausBot Composio setup](docs/composio.md) |
+| Composio project key (`ak_…`) | Connect Gmail, GitHub, Slack, Notion, and other apps to your bots | [OpenMausBot Composio setup](devops/docs/agent-app/composio.md) |
 | Boat API key | Give bots an isolated remote Linux computer with a desktop and terminal | [Boat API key guide](https://docs.boat.dev/api-keys) |
 | ElevenLabs key | Read replies aloud, and call your bots | [ElevenLabs API keys](https://elevenlabs.io/app/settings/api-keys) |
 | Fish Audio key | Read replies aloud with Fish Audio voices, and call your bots | [Fish Audio API keys](https://fish.audio/app/api-keys/) |
@@ -451,7 +469,7 @@ Composio sends each event to OpenMausBot's connected-apps service, which queues 
 with a long poll, so a desktop needs no public address and events wait while it is closed. Gmail is checked every
 15 minutes; Slack, GitHub and other push apps arrive at once. A desktop keeps up to 500 events a day and a paid
 Cloud 2,000; what is skipped shows on the automation. App events need the included connected apps: a server
-using its own Composio key cannot watch apps yet. Details: [docs/composio.md](docs/composio.md#app-events).
+using its own Composio key cannot watch apps yet. Details: [devops/docs/agent-app/composio.md](devops/docs/agent-app/composio.md#app-events).
 
 OpenMausBot starts a webhook-only receiver on `127.0.0.1:8800` by default (or one port above `OMB_PORT`).
 Set `OMB_WEBHOOK_PORT` to choose another port. A webhook secret is shown once when the trigger is created
@@ -467,22 +485,22 @@ Early but real — the loop works end to end: message → agent → streamed rep
 computer use. macOS, Windows, and Ubuntu 24.04 x64 have released builds; Ubuntu remains a beta with the
 capability limits above. Rough edges to expect: hosted/mobile connectivity is still being built, and webhook
 triggers currently use the local receiver rather than an always-on hosted relay.
-Hosted voice needs an ElevenLabs, Fish Audio, or xAI key; built-in Mac and local Chatterbox voices need no cloud key. Take-turns calls and the composer mic listen on-device on macOS and through Fish Audio speech-to-text on Windows and Linux (the same Fish Audio key as voices). See [`docs/voice-mode.md`](docs/voice-mode.md) for the design and the known gaps.
+Hosted voice needs an ElevenLabs, Fish Audio, or xAI key; built-in Mac and local Chatterbox voices need no cloud key. Take-turns calls and the composer mic listen on-device on macOS and through Fish Audio speech-to-text on Windows and Linux (the same Fish Audio key as voices). See [`devops/docs/agent-app/voice-mode.md`](devops/docs/agent-app/voice-mode.md) for the design and the known gaps.
 
-Contributions welcome — the driver SPI in [`server/contracts.ts`](server/contracts.ts) is deliberately
-small; adding a provider is one file in [`server/drivers/`](server/drivers/) plus a one-line registration.
+Contributions welcome — the driver SPI in [`be/ai/server/contracts.ts`](be/ai/server/contracts.ts) is deliberately
+small; adding a provider is one file in [`be/ai/server/drivers/`](be/ai/server/drivers/) plus a one-line registration.
 No code needed at all for your own engines: any ACP-speaking CLI or OpenAI-compatible endpoint
-plugs in through config — see [`docs/custom-engines.md`](docs/custom-engines.md).
-Users can add their own MCP tool servers with zero code via [`docs/custom-mcp-servers.md`](docs/custom-mcp-servers.md).
-For configuration switches, defaults and model-call implications, see [Feature switches](docs/feature-flags.md).
+plugs in through config — see [`devops/docs/agent-app/custom-engines.md`](devops/docs/agent-app/custom-engines.md).
+Users can add their own MCP tool servers with zero code via [`devops/docs/agent-app/custom-mcp-servers.md`](devops/docs/agent-app/custom-mcp-servers.md).
+For configuration switches, defaults and model-call implications, see [Feature switches](devops/docs/agent-app/feature-flags.md).
 To run bots on OpenRouter, Fireworks AI, DeepSeek, Cline or your own OpenAI- or Anthropic-compatible provider,
-see [Other model providers](apps/docs/content/docs/providers/model-providers.mdx).
+see [Other model providers](fe/docs-site/content/docs/providers/model-providers.mdx).
 
 ## Privacy
 
 Usage analytics are optional and anonymous: product events and a once-a-day count of what is set up, never keys,
 names, addresses or conversations. Turn them off in Settings → General → Usage analytics;
-[`docs/analytics.md`](docs/analytics.md) lists every event and property.
+[`devops/docs/agent-app/analytics.md`](devops/docs/agent-app/analytics.md) lists every event and property.
 
 ## Support the project
 
@@ -516,7 +534,7 @@ cannot use a localhost link. `--local` ignores saved remote access for one launc
 remote connection.
 
 The web UI can also be installed from Safari or Chrome as a standalone phone
-app. See [Install the phone web app](docs/phone-web-app.md) for Home Screen
+app. See [Install the phone web app](devops/docs/agent-app/phone-web-app.md) for Home Screen
 installation and pairing.
 
 Run `openmausbot setup` to reconfigure without resetting bots or conversations;
@@ -528,7 +546,7 @@ AI provider and service keys encrypted through the operating system instead;
 its `config.json` still holds OpenCode provider keys, keys given to one engine,
 and MCP header values in plaintext (a key a bot set from a secret card is kept
 in the Vault, and `config.json` holds only a pointer to it).
-See the [short setup guide](docs/cli-onboarding.md) for account differences,
+See the [short setup guide](devops/docs/agent-app/cli-onboarding.md) for account differences,
 phone choices, credential storage, and cancellation.
 
 For a server on a VPS or an always-on computer, run `npx openmausbot serve`
@@ -538,20 +556,20 @@ tailnet, `--lan` for this network only, or `--tunnel` (after
 `npx openmausbot login`) for a free MausBot web address. It prints one
 pairing link; paste it into the desktop app under **＋ → Connect to a
 server**. The short path for each install method (npx, Docker, a service) is
-at the top of [docs/self-hosting.md](docs/self-hosting.md); a server from
-scratch is [docs/deploy-vps.md](docs/deploy-vps.md).
+at the top of [devops/docs/agent-app/self-hosting.md](devops/docs/agent-app/self-hosting.md); a server from
+scratch is [devops/docs/agent-app/deploy-vps.md](devops/docs/agent-app/deploy-vps.md).
 
 ## License
 
 [Apache License 2.0](LICENSE) © 2026 Milind Soni and OpenMausBot contributors,
-except `enterprise/`, which is source-available under its
-[own license](enterprise/LICENSE); delete that folder and what remains is the
+except `be/ai/enterprise/`, which is source-available under its
+[own license](be/ai/enterprise/LICENSE); delete that folder and what remains is the
 open-source edition. Details, including how contributions are signed off, are
 in [LICENSING.md](LICENSING.md).
 
 Packaged Cua Driver components retain their upstream MIT, SIL OFL 1.1, MPL-2.0, and other dependency terms;
 the corresponding notices, license texts, source locations, and SBOM are in
-[`third_party/cua-driver/`](third_party/cua-driver/) and ship beside the native runtime.
+[`devops/third_party/cua-driver/`](devops/third_party/cua-driver/) and ship beside the native runtime.
 
 OpenMausBot is an independent, open-source project inspired by Grok Bot. It is
 not affiliated with, endorsed by, or associated with xAI; "Grok" is a trademark

@@ -257,7 +257,7 @@ importers:
         specifier: 4.123.0
         version: 4.123.0(@cloudflare/workers-types@5.20260825.1)
 
-  apps/docs:
+  fe/docs-site:
     dependencies:
       cnfast:
         specifier: ^0.1.0
@@ -315,7 +315,7 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
-  cloudflare/control-plane:
+  be/ai/cloudflare/control-plane:
     dependencies:
       better-auth:
         specifier: 1.7.7

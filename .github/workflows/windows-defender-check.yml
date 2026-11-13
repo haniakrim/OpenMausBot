@@ -3,7 +3,7 @@
 # of it off and excludes every drive), saves the installer like a browser download (Zone.Identifier, ZoneId=3),
 # installs it silently, opens the app for two minutes and presses Start screen control. The summary and the
 # defender-check artifact say what Defender found, whether cua-driver-background.exe runs and what the app's log says
-# (scripts/defender-check-win.mjs). The run fails when Windows Security flagged the app or screen control doesn't run.
+# (devops/scripts/agent-app/defender-check-win.mjs). The run fails when Windows Security flagged the app or screen control doesn't run.
 #
 # By hand only: Run workflow in the Actions tab (`gh workflow run windows-defender-check.yml --ref <branch>`), or the
 # "defender-check" label on a pull request, which is also how it runs before this file is on main.
@@ -42,7 +42,7 @@ jobs:
       - name: Install it like a download and watch Windows Security
         timeout-minutes: 45
         shell: bash
-        run: node scripts/defender-check-win.mjs --installer "$(ls release/OpenMausBot-*-setup.exe)" --out "$RUNNER_TEMP/defender-check"
+        run: node devops/scripts/agent-app/defender-check-win.mjs --installer "$(ls release/OpenMausBot-*-setup.exe)" --out "$RUNNER_TEMP/defender-check"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

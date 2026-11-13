@@ -10,18 +10,18 @@ dist-server
 *.local
 .DS_Store
 *.tsbuildinfo
-electron/resources/speech-helper
-electron/resources/OpenMausBot Speech.app
+fe/desktop/electron/resources/speech-helper
+fe/desktop/electron/resources/OpenMausBot Speech.app
 # stale helper from the removed Teach a skill recorder
-electron/resources/OpenMausBot Recorder.app
+fe/desktop/electron/resources/OpenMausBot Recorder.app
 release
 .omb-scratch
 .wrangler/
 .dev.vars
 .dev.vars.*
-!cloudflare/control-plane/.dev.vars.example
-cloudflare/composio-broker/worker-configuration.d.ts
-cloudflare/control-plane/worker-configuration.d.ts
+!be/ai/cloudflare/control-plane/.dev.vars.example
+be/ai/cloudflare/composio-broker/worker-configuration.d.ts
+be/ai/cloudflare/control-plane/worker-configuration.d.ts
 .claude/worktrees/
 .vercel/
 .pi/
@@ -34,11 +34,11 @@ cloudflare/control-plane/worker-configuration.d.ts
 *.keystore
 *.p12
 
-# per-tenant deploy settings (see deploy/.env.example)
-deploy/.env
+# per-tenant deploy settings (see devops/deploy/.env.example)
+devops/deploy/.env
 # update.sh's journal, log and the settings it keeps for a rollback
-deploy/.update/
-deploy/podman/.env
-deploy/podman/.env.*
-!deploy/podman/.env.example
+devops/deploy/.update/
+devops/deploy/podman/.env
+devops/deploy/podman/.env.*
+!devops/deploy/podman/.env.example
 /.env

@@ -5,7 +5,7 @@ description: "Verify OpenMausBot server and conversation changes against an isol
 
 # Verify OpenMausBot
 
-Follow the canonical instructions in `docs/verification/README.md`. Use its
+Follow the canonical instructions in `devops/docs/agent-app/verification/README.md`. Use its
 shared control tool; do not improvise raw API calls or drive the user's live
 OpenMausBot instance. The canonical feature map currently covers only the
 server flows that tool can prove.

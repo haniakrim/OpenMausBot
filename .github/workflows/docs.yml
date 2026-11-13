@@ -3,9 +3,9 @@ name: Docs
 on:
   pull_request:
     paths:
-      - "apps/docs/**"
-      - "docs/screenshots/**"
-      - "public/app-icon.svg"
+      - "fe/docs-site/**"
+      - "devops/docs/agent-app/screenshots/**"
+      - "fe/desktop/public/app-icon.svg"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
@@ -13,9 +13,9 @@ on:
   push:
     branches: [main]
     paths:
-      - "apps/docs/**"
-      - "docs/screenshots/**"
-      - "public/app-icon.svg"
+      - "fe/docs-site/**"
+      - "devops/docs/agent-app/screenshots/**"
+      - "fe/desktop/public/app-icon.svg"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
