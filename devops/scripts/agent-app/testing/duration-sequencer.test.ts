@@ -79,9 +79,9 @@ describe("vitest shard balance", () => {
   });
 
   it("keys Windows and POSIX paths the same way", () => {
-    expect(weightKey("/repo", "/repo/server/a.e2e.test.ts", path.posix)).toBe("be/ai/server/a.e2e.test.ts");
-    expect(weightKey("D:/a/repo", "D:/a/repo/server/a.e2e.test.ts", path.win32)).toBe("be/ai/server/a.e2e.test.ts");
-    expect(weightKey("D:\\a\\repo", "d:/a/repo/server/drivers/b.test.ts", path.win32)).toBe("be/ai/server/drivers/b.test.ts");
+    expect(weightKey("/repo", "/repo/be/ai/server/a.e2e.test.ts", path.posix)).toBe("be/ai/server/a.e2e.test.ts");
+    expect(weightKey("D:/a/repo", "D:/a/repo/be/ai/server/a.e2e.test.ts", path.win32)).toBe("be/ai/server/a.e2e.test.ts");
+    expect(weightKey("D:\\a\\repo", "d:/a/repo/be/ai/server/drivers/b.test.ts", path.win32)).toBe("be/ai/server/drivers/b.test.ts");
     expect(weightKey("D:/a/repo", "C:/elsewhere/c.test.ts", path.win32)).toBeNull();
     expect(weightKey("/repo", "/other/c.test.ts", path.posix)).toBeNull();
   });

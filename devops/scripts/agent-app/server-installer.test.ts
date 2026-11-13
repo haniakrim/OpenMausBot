@@ -569,7 +569,7 @@ describe.skipIf(!posix)("devops/deploy/install.sh", () => {
     expect(unlabelled.stdout).toContain("  note  The sandbox's files are the newest in the repository.");
     const copy = run(["--domain", "maus.example.com"], { env: { OMB_INSTALL_SOURCE: "https://mirror.example.test/omb" } });
     expect(copy.status).toBe(1);
-    expect(copy.calls.some((call) => call.includes("https://mirror.example.test/omb/deploy/box/prepare-host.sh -o "))).toBe(true);
+    expect(copy.calls.some((call) => call.includes("https://mirror.example.test/omb/devops/deploy/box/prepare-host.sh -o "))).toBe(true);
     expect(copy.calls.some((call) => call.includes(FILES) && call.includes(" -o "))).toBe(false);
   });
 
@@ -591,7 +591,7 @@ describe.skipIf(!posix)("devops/deploy/install.sh", () => {
 
   it("places update.sh as the repository has it, names it as the way to update, and keeps the version it pinned", () => {
     const first = run(["--domain", "maus.example.com"], { env: { FAKE_STABLE: "200" } });
-    expect(first.calls.some((call) => call.includes(`${SOURCE}/deploy/update.sh -o `))).toBe(true);
+    expect(first.calls.some((call) => call.includes(`${SOURCE}/devops/deploy/update.sh -o `))).toBe(true);
     expect(readFileSync(join(first.install, "update.sh"), "utf8")).toBe("the repository file\n");
     expect(statSync(join(first.install, "update.sh")).mode & 0o777).toBe(0o755);
     expect(first.stdout).toContain(`To update later, with a backup first and a way back:  sudo ${first.install}/update.sh`);
@@ -612,7 +612,7 @@ describe.skipIf(!posix)("devops/deploy/install.sh", () => {
 
   it("adds the Update server button with update-runner.sh, before the server starts, and says when it could not", () => {
     const first = run(["--domain", "maus.example.com"]);
-    expect(first.calls.some((call) => call.includes(`${SOURCE}/deploy/update-runner.sh -o `))).toBe(true);
+    expect(first.calls.some((call) => call.includes(`${SOURCE}/devops/deploy/update-runner.sh -o `))).toBe(true);
     const ids = `${process.getuid?.()}:${process.getgid?.()}`;
     const button = first.calls.findIndex((call) => call === `update-runner --install --dir ${first.install} --user ${ids} --no-restart`);
     expect(button).toBeGreaterThan(-1);

@@ -16,7 +16,7 @@ const root = fileURLToPath(new URL("../../../../", import.meta.url));
 
 // Guards the TypeScript catalog the desktop and web apps use. The generator writes
 // the native catalogs only when given their paths (`--swift`, `--kotlin`).
-const TS_PATH = "../../shared/mascot-bodies.ts";
+const TS_PATH = "../../../../be/ai/shared/mascot-bodies.ts";
 
 // Normalised to LF: a clone whose git config disagrees with .gitattributes must
 // fail over generated content, not line endings.

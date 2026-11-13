@@ -96,7 +96,7 @@ describe("container images", () => {
     for (const { args } of shipped()) expect(args).not.toMatch(/\bch(own|mod) -R\b/);
     // modes are fixed where the files are built, in a stage that is not shipped
     const build = all.find(s => s.name === "build")!.steps.find(step => step.op === "RUN" && step.args.startsWith("pnpm build:server"))!;
-    expect(build.args).toMatch(/ && chmod -R go-w dist dist-server skills$/);
+    expect(build.args).toMatch(/ && chmod -R go-w dist dist-server be\/ai\/skills$/);
     // a plain copy to a fresh inode drops the privileged-port capability and the 1001 owner
     expect(all.find(s => s.name === "edge")!.steps).toContainEqual({ op: "RUN", args: "cp /usr/bin/caddy /caddy" });
     const home = chain("cloud-home");
@@ -113,7 +113,7 @@ describe("container images", () => {
     ]);
     expect(home.findIndex(step => step.args.startsWith("--from=tunnel "))).toBeLessThan(home.findLastIndex(npmInstall));
     expect(home.filter(step => step.args.includes("--from=build")).map(step => step.args)).toEqual([
-      "/src/dist-native/duckdb/target ./duckdb", "/src/dist-server ./dist-server", "/src/dist ./dist", "/src/skills ./skills",
+      "/src/dist-native/duckdb/target ./duckdb", "/src/dist-server ./dist-server", "/src/dist ./dist", "/src/be/ai/skills ./skills",
     ].map(path => `--from=build ${path}`));
     expect(chain("server").filter(step => step.args.includes("--from=build")).every(step => step.args.startsWith("--from=build --chown=maus:maus "))).toBe(true);
   });
@@ -261,11 +261,11 @@ describe("container images", () => {
 
   it("builds Cloud home from the same Dockerfile in CI, with its own layer cache", () => {
     const smoke = workflow.jobs["build-and-smoke"].steps.map((step: { run?: string }) => step.run ?? "").join("\n");
-    expect(smoke).toContain("docker build --target cloud-home --build-arg CLOUD_HOME_ENGINES= -t omb-cloud-home:ci .");
+    expect(smoke).toContain("docker build -f devops/deploy/Dockerfile --target cloud-home --build-arg CLOUD_HOME_ENGINES= -t omb-cloud-home:ci .");
     const steps = workflow.jobs.publish.steps as { id?: string; uses?: string; with?: Record<string, string> }[];
     const server = steps.find(step => step.uses?.startsWith("docker/build-push-action@") && step.id !== "home")!;
     const home = steps.find(step => step.id === "home")!;
-    expect(home.with).not.toHaveProperty("file");
+    expect(home.with.file).toBe(server.with.file);
     expect(home.with!.target).toBe("cloud-home");
     expect(home.with!["build-args"]).not.toContain("BASE_IMAGE");
     expect(home.with!["cache-from"].split("\n")).toEqual(expect.arrayContaining(["type=gha", "type=gha,scope=cloud-home"]));

@@ -8,7 +8,7 @@ const ROOT = new URL("../../../../", import.meta.url);
 const EVENT = /\b(?:track|capture)\(\s*["'`]([a-z][a-z0-9_]*)["'`]/g;
 
 function sentEvents(): string[] {
-  const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "src"], { cwd: ROOT, encoding: "utf8" })
+  const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "fe/desktop/src"], { cwd: ROOT, encoding: "utf8" })
     .split("\n")
     .filter((file) => /\.(ts|tsx)$/.test(file) && !file.includes(".test."));
   const events = new Set<string>();

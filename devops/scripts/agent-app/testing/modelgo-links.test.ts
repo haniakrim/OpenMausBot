@@ -21,7 +21,7 @@ describe("links to ModelGo's site", () => {
   });
 
   it("is the only ModelGo address anywhere in src/ and shared/", () => {
-    const found = files("src", "shared").flatMap((file) => mentions(file).map((mention) => [file, mention]));
+    const found = files("fe/desktop/src", "be/ai/shared").flatMap((file) => mentions(file).map((mention) => [file, mention]));
     expect(found.filter(([, mention]) => mention !== MODELGO_URL)).toEqual([]);
     expect(found.map(([file]) => file)).toEqual(["be/ai/shared/modelgo.ts"]);
   });

@@ -9,7 +9,7 @@ describe("Podman image build", () => {
   it("ships the bundled skills, as the Docker server image does", () => {
     const server = read("../../deploy/Dockerfile").split(/^FROM runtime AS server$/m)[1];
     expect(server).toBeDefined();
-    expect(buildCopies(server)).toContain("/src/skills ./skills");
-    expect(buildCopies(read("../../deploy/podman/Containerfile"))).toContain("/src/skills ./skills");
+    expect(buildCopies(server)).toContain("/src/be/ai/skills ./skills");
+    expect(buildCopies(read("../../deploy/podman/Containerfile"))).toContain("/src/be/ai/skills ./skills");
   });
 });

@@ -57,12 +57,12 @@ describe("devops/docs/agent-app/verification recipes cite things that exist", ()
     expect(used.length).toBeGreaterThan(0);
     expect(used.filter((hit) => !helpVerbs.has(target(hit)))).toEqual([]);
     // the launcher form may also name `launch`, which pnpm cannot run
-    const direct = cited(/scripts\/control-omb\.ts ([a-z][\w-]*)/g);
+    const direct = cited(/(?:devops\/scripts\/agent-app|scripts)\/control-omb\.ts ([a-z][\w-]*)/g);
     expect(direct.filter((hit) => target(hit) !== "launch" && !helpVerbs.has(target(hit)))).toEqual([]);
   });
 
   it("cite source files that exist", () => {
-    const refs = cited(/(?<![\w/.-])((?:scripts|server|src|shared|electron|companion|enterprise)\/[\w./-]+\.(?:ts|tsx|mjs|cjs|py))(?![\w/])/g);
+    const refs = cited(/(?<![\w/.-])((?:devops\/scripts\/agent-app|be\/ai\/(?:server|shared|companion|enterprise)|fe\/desktop\/(?:src|electron))\/[\w./-]+\.(?:ts|tsx|mjs|cjs|py))(?![\w/])/g);
     expect(refs.length).toBeGreaterThan(50);
     expect([...new Set(refs.filter((hit) => !existsSync(join(ROOT, target(hit)))))]).toEqual([]);
   });
